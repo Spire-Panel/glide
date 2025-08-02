@@ -25,8 +25,16 @@ class DockerService {
       socketPath: process.env["DOCKER_SOCKET_PATH"] || "/var/run/docker.sock",
     });
 
-    // Set server data path
-    this.serverDataPath = process.env["SERVER_DATA_PATH"] || "./data/servers";
+    // Set server data path - convert to absolute path
+    const defaultPath = path.join(process.cwd(), "data", "servers");
+    this.serverDataPath = process.env["SERVER_DATA_PATH"]
+      ? path.resolve(process.env["SERVER_DATA_PATH"])
+      : defaultPath;
+
+    // Ensure the server data directory exists
+    if (!require("fs").existsSync(this.serverDataPath)) {
+      require("fs").mkdirSync(this.serverDataPath, { recursive: true });
+    }
   }
 
   /**
