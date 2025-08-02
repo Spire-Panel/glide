@@ -1,12 +1,50 @@
 {
   "name": "glide",
+  "version": "0.1.0",
+  "description": "A lightweight Wings daemon for managing Minecraft containers",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "build": "bun build ./src/index.ts --outdir dist --target bun",
+    "start": "bun run dist/index.js",
+    "test": "bun test",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write ."
   },
   "dependencies": {
-    "hono": "^4.8.12"
+    "@hono/node-server": "^1.18.1",
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "0.19.10",
+    "@hono/zod-validator": "^0.7.2",
+    "@scalar/hono-api-reference": "^0.9.13",
+    "@types/dockerode": "^3.3.17",
+    "dockerode": "^4.0.7",
+    "dotenv": "^16.4.5",
+    "hono": "^4.8.12",
+    "zod": "3.21.4"
   },
   "devDependencies": {
-    "@types/bun": "latest"
-  }
+    "@types/bun": "latest",
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
+  },
+  "keywords": [
+    "minecraft",
+    "docker",
+    "server",
+    "management",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT"
 }
