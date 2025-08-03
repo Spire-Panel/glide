@@ -1,6 +1,7 @@
 import Docker from "dockerode";
 import { z } from "zod";
 import path from "path";
+import { env } from "@/config/env";
 
 // Schema for server configuration
 const ServerConfigSchema = z.object({
@@ -20,7 +21,7 @@ class DockerService {
   private containerLabel = "com.glide.mc.server";
 
   constructor() {
-    let docker_url = process.env["DOCKER_SOCKET_PATH"];
+    let docker_url = env["DOCKER_SOCKET_PATH"];
     if (docker_url?.match(/docker\.sock/)) {
       this.docker = new Docker({
         socketPath: docker_url,
@@ -44,8 +45,8 @@ class DockerService {
 
     // Set server data path - convert to absolute path
     const defaultPath = path.join(process.cwd(), "data", "servers");
-    this.serverDataPath = process.env["SERVER_DATA_PATH"]
-      ? path.resolve(process.env["SERVER_DATA_PATH"])
+    this.serverDataPath = env["SERVER_DATA_PATH"]
+      ? path.resolve(env["SERVER_DATA_PATH"])
       : defaultPath;
 
     // Ensure the server data directory exists
