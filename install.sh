@@ -86,8 +86,7 @@ echo '{"host": "'${PUBLIC_IP}'", "port": 3000, "token": "'$(cat /proc/sys/kernel
 echo -e "${GREEN}✅ Glide installation complete!${NC}"
 
 cd ..
-echo -n "Would you like to install the glide auto updater? (y/n): "
-read answer
+read -rp "Would you like to install the glide auto updater? (y/n): " answer
 
 if [ "$answer" = "y" ]; then
     echo -e "${YELLOW}⏳ Installing auto updater...${NC}"
