@@ -43,7 +43,7 @@ export default {
       });
     } catch (e: any) {
       const error = e as DockerNS.HttpError;
-      throw Responses.FromCode(error.statusCode, error.json.message || "");
+      throw Responses.FromCode(error.statusCode, error.json?.message || "");
     }
   },
 } as Route;
