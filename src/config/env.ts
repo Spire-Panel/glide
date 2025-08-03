@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { readFileSync } from "fs";
 import path from "path";
+import fs from "fs";
 
 // Custom environment variable loader that doesn't use shell expansion
 function loadEnv() {
@@ -38,6 +39,10 @@ function loadEnv() {
   }
 }
 
+if (!fs.existsSync(path.resolve(process.cwd(), "spire_config.json"))) {
+  throw new Error("No spire_config.json found");
+}
+
 // Load environment variables with our custom loader
 const envVars = loadEnv();
 
@@ -64,6 +69,12 @@ const envSchema = z.object({
 
   // CORS
   ALLOWED_ORIGINS: z.string().default("*"),
+
+  // SPIRE CONFIG
+  SPIRE_TOKEN: z
+    .string()
+    .optional()
+    .default(require("../../spire_config.json")?.token),
 });
 
 // Parse environment variables

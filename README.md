@@ -1,11 +1,9 @@
-To install dependencies:
-```sh
-bun install
-```
+# Glide Daemon
 
-To run:
-```sh
-bun run dev
-```
+Glide Daemon is the manager for Minecraft servers, natively controlled by the Spire panel. This project is open source under the MIT license, but we do ask for credit on forks of either Glide or Spire.
 
-open http://localhost:3000
+## Installation
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Spire-Panel/glide/main/install.sh | bash
+```
