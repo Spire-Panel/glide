@@ -3,7 +3,7 @@
 set -e
 
 if [ -f ~/.zshrc ]; then
-    source ~/.zshrc
+    zsh
 else
     source ~/.bashrc
 fi
