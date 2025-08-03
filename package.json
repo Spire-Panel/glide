@@ -4,7 +4,7 @@
   "description": "A lightweight Wings daemon for managing Minecraft containers",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
+    "dev": "bun run --watch src/index.ts",
     "build": "bun build ./src/index.ts --outdir dist --target bun",
     "start": "bun run dist/index.js",
     "test": "bun test",
@@ -20,6 +20,7 @@
     "@types/dockerode": "^3.3.17",
     "dockerode": "^4.0.7",
     "dotenv": "^16.4.5",
+    "fastify": "^5.4.0",
     "hono": "^4.8.12",
     "zod": "3.21.4"
   },

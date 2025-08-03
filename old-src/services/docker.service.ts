@@ -20,10 +20,17 @@ class DockerService {
   private containerLabel = "com.glide.mc.server";
 
   constructor() {
-    // Initialize Docker client
-    this.docker = new Docker({
-      socketPath: process.env["DOCKER_SOCKET_PATH"] || "/var/run/docker.sock",
-    });
+    let docker_url = process.env["DOCKER_SOCKET_PATH"];
+    if (docker_url?.match(/docker.sock/)) {
+      this.docker = new Docker({
+        socketPath: docker_url,
+      });
+    } else {
+      this.docker = new Docker({
+        host: docker_url?.split(":")[0] || "http://localhost",
+        port: docker_url?.split(":")[1] || "2375",
+      });
+    }
 
     // Set server data path - convert to absolute path
     const defaultPath = path.join(process.cwd(), "data", "servers");
@@ -137,6 +144,9 @@ class DockerService {
     const container = await this.docker.createContainer({
       Image: imageName,
       name: `mc-${validatedConfig.name.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
+      Labels: {
+        [this.containerLabel]: "true",
+      },
       Env: [
         `EULA=TRUE`,
         `TYPE=${validatedConfig.type.toLowerCase()}`,

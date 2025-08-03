@@ -3,9 +3,65 @@ import { dockerService } from "../services/docker.service";
 import { env } from "../config/env";
 import type { Context } from "hono";
 import type { Env } from "hono";
+import { Errors, Responses, withErrorHandler } from "@/utils/errors";
+import { StatusCode } from "hono/utils/http-status";
+
+// Helper function to safely cast status codes
+const getStatusCode = (status: number): StatusCode => {
+  const validStatuses = [200, 201, 204, 400, 401, 403, 404, 409, 500];
+  return (validStatuses.includes(status) ? status : 500) as StatusCode;
+};
 
 // Create a new OpenAPI Hono instance for servers routes
-export const servers = new OpenAPIHono();
+export const servers = new OpenAPIHono({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      if (result.error instanceof Error) {
+        if (
+          "statusCode" in result.error &&
+          typeof result.error.statusCode === "number"
+        ) {
+          // Handle HttpError instances
+          const status = getStatusCode(result.error.statusCode);
+          return c.json(
+            {
+              success: false,
+              error: result.error.message,
+              message: result.error.message,
+              ...("details" in result.error && {
+                details: (result.error as any).details,
+              }),
+            },
+            status
+          ) as any; // Type assertion needed due to OpenAPIHono types
+        }
+
+        // Handle other errors
+        return c.json(
+          {
+            success: false,
+            error: "Internal Server Error",
+            message: result.error.message,
+          },
+          500 as StatusCode
+        ) as any;
+      }
+
+      // Handle unknown errors
+      return c.json(
+        {
+          success: false,
+          error: "Internal Server Error",
+          message: "An unknown error occurred",
+        },
+        500 as StatusCode
+      ) as any;
+    }
+
+    // If successful, return undefined to let OpenAPIHono handle the response
+    return undefined;
+  },
+});
 
 // Server type enum
 const ServerType = z.enum(["VANILLA", "PAPER", "FORGE", "FABRIC"]);
@@ -116,46 +172,38 @@ servers.openapi(
     },
   },
   async (c) => {
-    try {
-      const serverList = await dockerService.listServers();
+    throw Errors.BadRequest("testing an error");
+    const serverList = await dockerService.listServers().catch((e) => {
+      throw Errors.InternalServerError("Failed to list servers", { error: e });
+    });
 
-      // Map the server data to match the serverSchema
-      const formattedServers = serverList.map((server) => {
-        // Ensure the status is one of the allowed values
-        const status = (
-          ["STOPPED", "STARTING", "RUNNING", "ERROR"].includes(server.status)
-            ? server.status
-            : "STOPPED"
-        ) as "STOPPED" | "STARTING" | "RUNNING" | "ERROR";
+    // Map the server data to match the serverSchema
+    const formattedServers = serverList.map((server) => {
+      // Ensure the status is one of the allowed values
+      const status = (
+        ["STOPPED", "STARTING", "RUNNING", "ERROR"].includes(server.status)
+          ? server.status
+          : "STOPPED"
+      ) as "STOPPED" | "STARTING" | "RUNNING" | "ERROR";
 
-        // Create a properly typed server object that matches serverSchema
-        const serverData = {
-          id: server.id,
-          name: server.name,
-          version: server.version,
-          type: server.type,
-          port: server.port || 25565, // Default port if not specified
-          status,
-          memory: server.memory || "2G",
-          createdAt: server.created || new Date().toISOString(),
-          modpackId: server.modpackId,
-        };
-      });
+      // Create a properly typed server object that matches serverSchema
+      const serverData = {
+        id: server.id,
+        name: server.name,
+        version: server.version,
+        type: server.type,
+        port: server.port || 25565, // Default port if not specified
+        status,
+        memory: server.memory || "2G",
+        createdAt: server.created || new Date().toISOString(),
+        modpackId: server.modpackId,
+      };
 
-      // Return the response with proper typing
-      return c.json(formattedServers, 200);
-    } catch (error) {
-      console.error("Failed to list servers:", error);
-      return c.json(
-        {
-          status: 500,
-          error: "Internal Server Error",
-          message:
-            error instanceof Error ? error.message : "Failed to list servers",
-        },
-        500
-      );
-    }
+      return serverData;
+    });
+
+    // Return the response with proper typing
+    return Responses.Success(c, formattedServers);
   }
 );
 
