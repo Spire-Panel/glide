@@ -199,6 +199,7 @@ export class DockerService {
     // Prepare environment variables
     const envVars: string[] = [
       "EULA=TRUE",
+      "CREATE_CONSOLE_IN_PIPE=true",
       `TYPE=${validatedConfig.data.type.toLowerCase()}`,
       `VERSION=${validatedConfig.data.version}`,
       `MEMORY=${validatedConfig.data.memory}`,
