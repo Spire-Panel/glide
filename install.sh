@@ -82,7 +82,6 @@ fi
 echo '{"host": "'${PUBLIC_IP}'", "port": 3000, "token": "'$(cat /proc/sys/kernel/random/uuid)'", "debug": '$DEBUG_MODE'}' > ./spire_config.json
 
 chown $REAL_USER:$REAL_USER ./glide -R || true 
-
 SERVICE_FILE="/etc/systemd/system/glide.service"
 
 # Create the service file with debug option if enabled
