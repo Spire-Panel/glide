@@ -2,11 +2,8 @@
 
 set -e
 
-if [ -f ~/.zshrc ]; then
-    source ~/.zshrc
-else
-    source ~/.bashrc
-fi
+source ~/.bashrc
+
 
 # Colors for output
 GREEN='\033[0;32m'
