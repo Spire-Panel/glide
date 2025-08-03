@@ -13,7 +13,7 @@ export default {
     } catch (e: any) {
       const error = e as DockerNS.HttpError;
       console.error(`Error listing servers:`, error);
-      return Responses.FromCode(error.statusCode, error.json.message || "");
+      return Responses.FromCode(error.statusCode, error.json?.message || "");
     }
   },
 } as Route;

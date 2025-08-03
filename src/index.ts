@@ -134,6 +134,7 @@ routes?.map((route) => {
               index: param.index,
               value: param.value,
             };
+
         const body = request.body as Record<string, any>;
         const response = await route.handler!({
           request,
@@ -180,7 +181,7 @@ routes?.map((route) => {
   });
 });
 
-app.listen({ port: 3000 }, (err, addr) => {});
+app.listen({ port: 3000, host: "0.0.0.0" }, (err, addr) => {});
 
 // const route = req as Route;
 // const appMethods = [
