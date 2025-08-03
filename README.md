@@ -7,3 +7,9 @@ Glide Daemon is the manager for Minecraft servers, natively controlled by the Sp
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Spire-Panel/glide/main/install.sh | bash
 ```
+
+## Installing the auto updater
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Spire-Panel/glide-updater/main/install.sh | bash
+```

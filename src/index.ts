@@ -4,11 +4,24 @@ import { FileRoute, Method, Params, Route } from "./types";
 import path from "path";
 import { env } from "./config/env";
 import { HttpError, HttpResponse, Responses } from "./types/Http";
+import kleur from "kleur";
+
+const envToLogger = {
+  development: {
+    transport: {
+      target: "pino-pretty",
+      options: {
+        translateTime: "HH:MM:ss Z",
+        ignore: "pid,hostname",
+      },
+    },
+  },
+  production: false,
+  test: true,
+};
 
 const app = Fastify({
-  logger: {
-    level: "info",
-  },
+  logger: envToLogger[env.NODE_ENV] ?? true,
 });
 
 app.register((fastify, opts) => {
@@ -96,7 +109,6 @@ const readRoutes = async (basePath: string, dir: string) => {
 await readRoutes("routes", path.join(__dirname, "routes"));
 
 routes?.map((route) => {
-  console.log(`Registered route at path: ${route.method} ${route.url}`);
   app.route({
     method: route.method!,
     url: route.url!,
@@ -181,32 +193,11 @@ routes?.map((route) => {
   });
 });
 
-app.listen({ port: 3000, host: "0.0.0.0" }, (err, addr) => {});
-
-// const route = req as Route;
-// const appMethods = [
-//   "get",
-//   "post",
-//   "put",
-//   "delete",
-//   "patch",
-//   "options",
-//   "head",
-// ] as const;
-// appMethods.forEach((method) => {
-//   if (route.method?.toLowerCase() === method) {
-//     const requestUrl = console.log({ requestUrl });
-//     app[method](filePath, (request, response) => {
-//       const routeParams = params.map((p) => {
-//         //
-//       });
-//       return route.handler({
-//         request,
-//         response,
-//         env,
-//         logger: app.log,
-//         params,
-//       });
-//     });
-//   }
-// });
+try {
+  await app.listen({ port: env.PORT, host: "0.0.0.0" }, (_err, addr) => {
+    console.log(kleur.green(`Server listening at ${addr}`));
+  });
+} catch (err) {
+  console.error(err);
+  process.exit(1);
+}
