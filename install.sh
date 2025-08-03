@@ -59,8 +59,6 @@ while [ ! -d "./glide" ]; do
     sleep 1
 done
 
-chown $REAL_USER:$REAL_USER ./glide -R
-
 cd ./glide
 
 echo -e "${GREEN}✅ Repository cloned!${NC}"
@@ -83,13 +81,45 @@ fi
 
 echo '{"host": "'${PUBLIC_IP}'", "port": 3000, "token": "'$(cat /proc/sys/kernel/random/uuid)'", "debug": '$DEBUG_MODE'}' > ./spire_config.json
 
+chown $REAL_USER:$REAL_USER ./glide -R
+
+SERVICE_FILE="/etc/systemd/system/glide.service"
+
+# Create the service file with debug option if enabled
+cat > $SERVICE_FILE <<EOL
+[Unit]
+Description=Glide Daemon Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=$(pwd)
+$(if [ "$DEBUG_MODE" = true ]; then
+    echo "ExecStart=$(pwd)/glide.sh --debug"
+else
+    echo "ExecStart=$(pwd)/glide.sh"
+    echo "# Uncomment the line below to enable debug logging"
+    echo "#ExecStart=$(pwd)/glide.sh --debug"
+fi)
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# Enable and start the service
+echo -e "${YELLOW}⏳ Enabling and starting service...${NC}"
+systemctl enable --now glide
+systemctl status glide
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ Service enabled and started!${NC}"
+else
+    echo -e "${YELLOW}⚠️  Service failed to start. Please check the logs for more information.${NC}"
+fi
+    
 echo -e "${GREEN}✅ Glide installation complete!${NC}"
 
-cd ..
-read -rp "Would you like to install the glide auto updater? (y/n): " answer
-
-if [ "$answer" = "y" ]; then
-    echo -e "${YELLOW}⏳ Installing auto updater...${NC}"
-    curl -fsSL https://raw.githubusercontent.com/Spire-Panel/glide-updater/main/install.sh | bash
-    echo -e "${GREEN}✅ Auto updater installed!${NC}"
-fi
+exit 0
