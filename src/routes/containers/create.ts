@@ -4,13 +4,15 @@ import { dockerService } from "@/services/Docker.service";
 import { DockerNS, Route } from "@/types";
 import { Responses } from "@/types/Http";
 import { z } from "zod";
+import { ServerTypeEnum } from "@/services/Docker.service";
 
 const createServerSchema = z.object({
   name: z.string().min(3).max(32),
   version: z.string().min(1).default("1.20.1"),
-  type: z.enum(["VANILLA", "PAPER", "FORGE", "FABRIC"]).default("VANILLA"),
+  type: ServerTypeEnum.default("VANILLA"),
   port: z.number().int().min(1024).max(49151).optional().default(25565),
   memory: z.string().default(env.DEFAULT_MEMORY),
+  modpackId: z.string().or(z.number()).optional(),
 });
 type CreateServerSchema = typeof createServerSchema;
 
@@ -43,6 +45,7 @@ export default {
       });
     } catch (e: any) {
       const error = e as DockerNS.HttpError;
+      console.error(error);
       throw Responses.FromCode(error.statusCode, error.json?.message || "");
     }
   },
