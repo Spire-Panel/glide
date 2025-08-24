@@ -26,6 +26,9 @@ export default {
     const cpuUsagePercent = Math.round(
       (cpuUsage.user + cpuUsage.system) / 1024 / 1024
     );
+    const cpuCores = os.cpus().length;
+    const cpuModel = os.cpus()[0]?.model;
+
     const uptime = process.uptime();
     const stat = statfsSync("/");
 
@@ -38,6 +41,8 @@ export default {
     const storageUsedSpace = storageTotalSpace - storageFreeSpace;
     const storageUsedPercent = (storageUsedSpace / storageTotalSpace) * 100;
 
+    const lastSeen = new Date();
+
     return Responses.Ok({
       memoryUsageMB,
       memoryUsagePercent,
@@ -45,11 +50,14 @@ export default {
       memoryUsageFree,
       totalMemory,
       cpuUsagePercent,
+      cpuCores,
+      cpuModel,
       uptime,
       storageFreeSpace,
       storageUsedSpace,
       storageTotalSpace,
       storageUsedPercent,
+      lastSeen,
     });
   },
 } as Route;
