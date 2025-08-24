@@ -1,5 +1,5 @@
 import { Env } from "@/config/env";
-import { FastifyRequest, FastifyBaseLogger } from "fastify";
+import { FastifyRequest, FastifyBaseLogger, FastifyReply } from "fastify";
 import { ErrorStatusCode, HttpError, HttpResponse } from "./Http";
 import { ValidParamType } from "./Routes";
 
@@ -18,6 +18,7 @@ export type HandlerOptions<TParams = Record<string, any> | undefined> = {
   logger: FastifyBaseLogger;
   params: TParams;
   body: Record<string, any>;
+  reply: FastifyReply;
 };
 export type HandlerResponseType =
   | Promise<HttpResponse | HttpError>

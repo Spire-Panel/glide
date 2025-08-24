@@ -54,6 +54,9 @@ const envSchema = z.object({
     .default("development"),
   PORT: z.coerce.number().default(3000),
   CURSEFORGE_API_KEY: z.coerce.string().optional(),
+  SOCKET_PORT: z.coerce.number().default(8080),
+  REDIS_HOST: z.string().default("127.0.0.1"),
+  REDIS_PORT: z.coerce.number().default(6379),
 
   // Docker configuration
   DOCKER_SOCKET_PATH: z.string().default("/var/run/docker.sock"),

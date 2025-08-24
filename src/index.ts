@@ -5,6 +5,8 @@ import path from "path";
 import { env } from "./config/env";
 import { HttpError, HttpResponse, Responses } from "./types/Http";
 import kleur from "kleur";
+import { socketService } from "./services/Socket.service";
+import cors from "@fastify/cors";
 
 const envToLogger = {
   development: {
@@ -24,6 +26,36 @@ const app = Fastify({
   logger: envToLogger[env.NODE_ENV] ?? true,
 });
 
+await app.register(cors, {
+  origin:
+    env.ALLOWED_ORIGINS === "*"
+      ? "*"
+      : env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()),
+  methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+});
+
+// Register JSON parser
+app.register((fastify, opts) => {
+  fastify.addContentTypeParser(
+    "application/json",
+    { parseAs: "string" },
+    function (request, payload, done) {
+      try {
+        const json = JSON.parse(payload.toString());
+        done(null, json);
+      } catch (error) {
+        done(error as Error, undefined);
+      }
+    }
+  );
+});
+
+socketService.socket.listen(env.SOCKET_PORT);
+
 app.register((fastify, opts) => {
   fastify.addContentTypeParser(
     "application/json",
@@ -36,6 +68,33 @@ app.register((fastify, opts) => {
       }
     }
   );
+});
+
+const publicRoutes = ["/logs"];
+
+app.addHook("onRequest", (request, reply, done) => {
+  reply.header(
+    "Access-Control-Allow-Origin",
+    env.ALLOWED_ORIGINS === "*" ? "*" : env.ALLOWED_ORIGINS
+  );
+  reply.header(
+    "Access-Control-Allow-Methods",
+    "GET, PUT, POST, DELETE, OPTIONS"
+  );
+  reply.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  reply.header("Access-Control-Allow-Credentials", "true");
+
+  if (request.url === "/health") return done();
+  if (publicRoutes.some((route) => request.url.endsWith(route))) return done();
+
+  const token = request.headers["authorization"];
+  if (token !== `Bearer ${env.SPIRE_TOKEN}`) {
+    return reply.status(401).send({
+      error: "Unauthorized",
+      success: false,
+    });
+  }
+  done();
 });
 
 let routes: FileRoute[] = [];
@@ -150,6 +209,7 @@ routes?.map((route) => {
         const body = request.body as Record<string, any>;
         const response = await route.handler!({
           request,
+          reply,
           env,
           logger: app.log,
           params: paramsObj,

@@ -2,10 +2,8 @@ import Docker from "dockerode";
 import { z } from "zod";
 import path from "path";
 import { env } from "@/config/env";
-import { HttpError, Responses } from "@/types/Http";
+import { Responses } from "@/types/Http";
 import { ZodErrorFormatter } from "@/lib/utils";
-import { isNumber } from "util";
-import { DockerNS } from "@/types";
 
 // Schema for server configuration
 export const ServerTypeEnum = z.enum([
@@ -77,15 +75,22 @@ export class DockerService {
    * List all Minecraft server containers
    */
   async listServers() {
-    try {
-      const containers = await this.docker.listContainers({
-        all: true, // Include stopped containers
-        filters: {
-          label: [this.containerLabel],
-        },
-      });
+    console.log(" hello world ");
+    console.log({
+      docker: this.docker.listContainers({
+        filters: { label: [this.containerLabel] },
+      }),
+    });
+    const containers = this.docker.listContainers({
+      all: true, // Include stopped containers
+      filters: {
+        label: [this.containerLabel],
+      },
+    });
+    console.log({ containers });
 
-      const result = Promise.all(
+    const result = containers.then((containers) => {
+      return Promise.all(
         containers.map(async (containerInfo) => {
           const container = this.docker.getContainer(containerInfo.Id);
 
@@ -104,11 +109,9 @@ export class DockerService {
           };
         })
       );
-      return result;
-    } catch (error) {
-      console.error("Error listing servers:", error);
-      throw new Error("Failed to list servers");
-    }
+    });
+
+    return result;
   }
 
   /**
@@ -497,6 +500,11 @@ export class DockerService {
       .trim()
       .replace(/�/g, "")
       .replace(/[^\x20-\x7E\n]/g, "");
+  }
+
+  async getContainer(containerId: string) {
+    const container = await this.docker.getContainer(containerId);
+    return container;
   }
 }
 

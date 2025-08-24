@@ -5,10 +5,7 @@ import { dockerService } from "@/services/Docker.service";
 export default {
   handler: async () => {
     try {
-      const servers = await dockerService.listServers().catch((e) => {
-        console.error(e);
-        throw Responses.InternalServerError(e.message, e);
-      });
+      const servers = await dockerService.listServers();
       return Responses.Ok(servers);
     } catch (e: any) {
       const error = e as DockerNS.HttpError;
