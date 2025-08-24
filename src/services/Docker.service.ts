@@ -25,11 +25,6 @@ const ServerConfigSchema = z.object({
 
 type ServerConfig = z.infer<typeof ServerConfigSchema>;
 
-interface FileInfo {
-  name: string;
-  isDirectory: boolean;
-}
-
 export class DockerService {
   private docker: Docker;
   private serverDataPath: string;
@@ -75,19 +70,12 @@ export class DockerService {
    * List all Minecraft server containers
    */
   async listServers() {
-    console.log(" hello world ");
-    console.log({
-      docker: this.docker.listContainers({
-        filters: { label: [this.containerLabel] },
-      }),
-    });
     const containers = this.docker.listContainers({
       all: true, // Include stopped containers
       filters: {
         label: [this.containerLabel],
       },
     });
-    console.log({ containers });
 
     const result = containers.then((containers) => {
       return Promise.all(
