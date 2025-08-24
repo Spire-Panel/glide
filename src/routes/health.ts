@@ -12,10 +12,14 @@ export default {
     const systemTotalMB = os.totalmem() / 1024 / 1024;
     const systemFreeMB = os.freemem() / 1024 / 1024;
 
-    const memoryUsageMB = Math.round(rssMB); // process memory used
+    const memoryUsageMB = Math.round(
+      (os.totalmem() - os.freemem()) / 1024 / 1024
+    ); // process memory used
     const memoryUsageTotal = Math.round(systemTotalMB); // total system RAM
     const memoryUsageFree = Math.round(systemFreeMB); // free system RAM
-    const memoryUsagePercent = Math.round((rssMB / systemTotalMB) * 100); // % of system RAM
+    const memoryUsagePercent = Math.round(
+      (memoryUsageMB / systemTotalMB) * 100
+    ); // % of system RAM
     const totalMemory = memoryUsageMB;
 
     const cpuUsage = process.cpuUsage();
