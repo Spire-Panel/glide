@@ -3,9 +3,10 @@ import { Responses } from "@/types/Http";
 import process from "process";
 import { statfsSync } from "fs";
 import os from "os";
+import { redisService } from "@/services/Redis.service";
 
 export default {
-  handler: () => {
+  handler: async () => {
     const memoryUsage = process.memoryUsage();
 
     const rssMB = memoryUsage.rss / 1024 / 1024;

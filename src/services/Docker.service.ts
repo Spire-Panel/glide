@@ -265,12 +265,25 @@ export class DockerService {
   }
 
   /**
+   * Restart a Minecraft server container
+   */
+  async restartServer(containerId: string) {
+    const container = this.docker.getContainer(containerId);
+    await container.restart();
+    return { status: "RESTARTED" };
+  }
+
+  /**
    * Get server status
    */
   async getServerStatus(containerId: string) {
     try {
       const container = this.docker.getContainer(containerId);
       const data = await container.inspect();
+      const stats = await container.stats({
+        "one-shot": true,
+        stream: false,
+      });
 
       return {
         id: data.Id,
@@ -280,6 +293,8 @@ export class DockerService {
         createdAt: data.Created,
         ipAddress: data.NetworkSettings.IPAddress,
         ports: data.NetworkSettings.Ports,
+        memory: stats.memory_stats,
+        cpu: stats.cpu_stats,
       };
     } catch (error: any) {
       if (error.statusCode === 404) {
