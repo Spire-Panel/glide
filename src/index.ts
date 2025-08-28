@@ -231,7 +231,7 @@ routes?.map((route) => {
       } catch (error: any) {
         if (error instanceof HttpError) {
           console.log("httperror");
-          reply.status(error.status).send({
+          return reply.status(error.status).send({
             error: error.name,
             message: error.message,
             success: false,
@@ -243,7 +243,7 @@ routes?.map((route) => {
           });
         }
 
-        reply.status(500).send({
+        return reply.status(500).send({
           error: "Internal Server Error",
           success: false,
           message: error.message,

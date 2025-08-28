@@ -509,6 +509,51 @@ export class DockerService {
     const container = await this.docker.getContainer(containerId);
     return container;
   }
+
+  async executeCommand(containerId: string, command: string) {
+    const container = this.docker.getContainer(containerId);
+    const exec = await container.exec({
+      Cmd: ["sudo", "/bin/bash", "-c", command],
+      AttachStdout: true,
+      AttachStderr: true,
+    });
+
+    const stream = await exec.start({});
+
+    let output = "";
+    stream.on("data", (chunk: Buffer) => {
+      output += chunk.toString();
+    });
+
+    // check if there was an error
+    stream.on("error", (error: any) => {
+      throw error;
+    });
+
+    // check if exec had an error
+    stream.on("exit", (code: number) => {
+      if (code !== 0) {
+        throw new Error(`exec failed with code ${code}`);
+      }
+    });
+
+    await new Promise<void>((resolve) => stream.on("end", resolve));
+
+    if (output.includes("No such file or directory")) {
+      throw Responses.NotFound("No such file or directory");
+    }
+
+    output = output
+      .replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "")
+      .replace(/\u0000/g, "")
+      .replace(/\u0002/g, "")
+      .replace(/\u0001/g, "")
+      .replace(/\u001e/g, "")
+      .replace(/\f/g, "")
+      .replace(/\u0011/g, "");
+
+    return output;
+  }
 }
 
 export const dockerService = new DockerService();

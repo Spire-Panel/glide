@@ -8,7 +8,7 @@ import { ServerTypeEnum } from "@/services/Docker.service";
 
 const createServerSchema = z.object({
   name: z.string().min(3).max(32),
-  version: z.string().min(1).default("1.20.1"),
+  version: z.string().min(0).default("1.20.1"),
   type: ServerTypeEnum.default("VANILLA"),
   port: z.number().int().min(1024).max(49151).optional().default(25565),
   memory: z.string().default(env.DEFAULT_MEMORY),
@@ -20,8 +20,25 @@ export default {
   url: "/containers",
   method: "POST",
   handler: async ({ request, body }) => {
-    const validatedBody = createServerSchema.safeParse(body);
+    const validatedBody = createServerSchema
+      .refine((data) => {
+        if (data.modpackId) {
+          data.version = "1.20.1";
+        }
+        if (data.modpackId && !isNaN(Number(data.modpackId))) {
+          data.modpackId = Number(data.modpackId);
+        }
+        return data;
+      })
+      .safeParse(body);
+
     if (!validatedBody.success) {
+      console.log(
+        ZodErrorFormatter<CreateServerSchema>(
+          createServerSchema,
+          validatedBody.error
+        )
+      );
       throw Responses.BadRequest("Invalid body", {
         details: ZodErrorFormatter<CreateServerSchema>(
           createServerSchema,
