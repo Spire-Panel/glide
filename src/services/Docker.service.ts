@@ -510,10 +510,10 @@ export class DockerService {
     return container;
   }
 
-  async executeCommand(containerId: string, command: string) {
+  async executeCommand(containerId: string, ...command: string[]) {
     const container = this.docker.getContainer(containerId);
     const exec = await container.exec({
-      Cmd: ["sudo", "/bin/bash", "-c", command],
+      Cmd: ["sudo", "/bin/bash", "-c", ...command],
       AttachStdout: true,
       AttachStderr: true,
     });

@@ -25,6 +25,9 @@ export default {
       `rcon-cli ${validatedBody.data.command}`
     );
 
-    return Responses.Ok(result);
+    // turn \n into new array entry
+    const lines = result.split("\n").filter((r) => Boolean(r));
+
+    return Responses.Ok(lines);
   },
 } as Route<{ id: Param<string> }>;
