@@ -153,10 +153,17 @@ export class DockerService {
 
     // Determine the Docker image based on server type
     let imageName: string;
-    const [major, minor] = validatedConfig.data.version.split(".");
+    const [major, minor, _patch] = validatedConfig.data.version.split(".");
+    if (!major || !minor) {
+      throw Responses.BadRequest("Invalid version", {
+        details: "Version must be in the format X.Y.Z?",
+      });
+    }
     switch (validatedConfig.data.type) {
       case "PAPER":
-        parseInt(minor) >= 21 ? imageName = `itzg/minecraft-server:java21` : imageName = `itzg/minecraft-server:java17`;
+        parseInt(minor) >= 21
+          ? (imageName = `itzg/minecraft-server:java21`)
+          : (imageName = `itzg/minecraft-server:java17`);
         break;
       case "FORGE":
         imageName = `itzg/minecraft-server:java17-forge`;
@@ -171,7 +178,9 @@ export class DockerService {
         imageName = `itzg/minecraft-server:java8-multiarch`;
         break;
       default: // VANILLA
-        parseInt(minor) >= 21 ? imageName = `itzg/minecraft-server:java21` : imageName = `itzg/minecraft-server:java17`;
+        parseInt(minor) >= 21
+          ? (imageName = `itzg/minecraft-server:java21`)
+          : (imageName = `itzg/minecraft-server:java17`);
     }
 
     // Pull image if it doesn't exist
@@ -504,6 +513,28 @@ export class DockerService {
       .trim()
       .replace(/�/g, "")
       .replace(/[^\x20-\x7E\n]/g, "");
+  }
+
+  async writeFile(containerId: string, path: `/data/${string}`, text: string) {
+    const container = await this.docker.getContainer(containerId);
+    const exec = await container.exec({
+      Cmd: [
+        "echo",
+        `"${text.replace("\n", "\\n").replace('"', '\\"')}"`,
+        ">",
+        path,
+      ],
+    });
+    const stream = await exec.start({});
+    stream.on("error", (error: any) => {
+      throw error;
+    });
+    stream.on("exit", (code: number) => {
+      if (code !== 0) {
+        throw new Error(`echo failed with code ${code}`);
+      }
+    });
+    return await new Promise<void>((resolve) => stream.on("end", resolve));
   }
 
   async getContainer(containerId: string) {

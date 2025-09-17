@@ -12,12 +12,15 @@ export type Method =
   | "OPTIONS"
   | "HEAD";
 
-export type HandlerOptions<TParams = Record<string, any> | undefined> = {
+export type HandlerOptions<
+  TParams = Record<string, any> | undefined,
+  TBody = Record<string, any>,
+> = {
   request: FastifyRequest;
   env: Env;
   logger: FastifyBaseLogger;
   params: TParams;
-  body: Record<string, any>;
+  body: TBody;
   reply: FastifyReply;
 };
 export type HandlerResponseType =
@@ -25,9 +28,10 @@ export type HandlerResponseType =
   | HttpResponse
   | HttpError;
 
-export type Handler<TParams = Record<string, any> | undefined> = (
-  options: HandlerOptions<TParams>
-) => HandlerResponseType | never;
+export type Handler<
+  TParams = Record<string, any> | undefined,
+  TBody = Record<string, any>,
+> = (options: HandlerOptions<TParams, TBody>) => HandlerResponseType | never;
 
 export interface FileRoute<TParams = Record<string, any> | undefined> {
   method?: Method;
@@ -36,9 +40,12 @@ export interface FileRoute<TParams = Record<string, any> | undefined> {
   params?: Params<TParams>[];
 }
 
-export interface Route<TParams = Record<string, any> | undefined> {
+export interface Route<
+  TParams = Record<string, any> | undefined,
+  TBody = Record<string, any>,
+> {
   method?: Method;
-  handler?: Handler<TParams>;
+  handler?: Handler<TParams, TBody>;
   url?: string;
 }
 
