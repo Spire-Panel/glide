@@ -153,9 +153,10 @@ export class DockerService {
 
     // Determine the Docker image based on server type
     let imageName: string;
+    const [major, minor] = validatedConfig.data.version.split(".");
     switch (validatedConfig.data.type) {
       case "PAPER":
-        imageName = `itzg/minecraft-server:java17`;
+        parseInt(minor) >= 21 ? imageName = `itzg/minecraft-server:java21` : imageName = `itzg/minecraft-server:java17`;
         break;
       case "FORGE":
         imageName = `itzg/minecraft-server:java17-forge`;
@@ -170,7 +171,7 @@ export class DockerService {
         imageName = `itzg/minecraft-server:java8-multiarch`;
         break;
       default: // VANILLA
-        imageName = `itzg/minecraft-server:java17`;
+        parseInt(minor) >= 21 ? imageName = `itzg/minecraft-server:java21` : imageName = `itzg/minecraft-server:java17`;
     }
 
     // Pull image if it doesn't exist
